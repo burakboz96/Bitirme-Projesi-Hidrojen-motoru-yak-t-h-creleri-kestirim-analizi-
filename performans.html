@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Entegrasyon Paneli</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f6fc;
+      color: #1e293b;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .left-panel {
+  width: 50%;
+  background: linear-gradient(120deg, #3b82f6, #60a5fa);
+  position: relative;
+  overflow: hidden;
+}
+
+.slideshow {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  animation: float 6s ease-in-out infinite;
+}
+
+.slide.active {
+  opacity: 1;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+
+.chat-button {
+  position: fixed;
+  bottom: 20px; /* Ekranın alt kısmına yerleştiriyoruz */
+  left: 20px; /* Ekranın sol kısmına yerleştiriyoruz */
+  background-color: #ffffff;
+  color: #3b82f6;
+  padding: 20px 25px;
+  border-radius: 25px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: background 0.3s, transform 0.3s; /* Arka plan ve transform animasyonu */
+  animation: bounce 2s ease-in-out infinite; /* Animasyon ekleniyor */
+}
+
+.chat-button:hover {
+  background-color: #e0e7ff;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0); /* Başlangıç konumu */
+  }
+  25% {
+    transform: translateY(-5px); /* Yukarı doğru hafif hareket */
+  }
+  50% {
+    transform: translateY(0); /* Ortaya geri dönme */
+  }
+  75% {
+    transform: translateY(-5px); /* Yeniden hafif yukarı hareket */
+  }
+  100% {
+    transform: translateY(0); /* Nihai konum */
+  }
+}
+
+
+    .right-panel {
+      width: 50%;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #3b82f6;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #475569;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background-color: #f8fafc;
+      font-size: 16px;
+    }
+
+    .api-button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .api-button:hover {
+      background-color: #2563eb;
+    }
+
+    .loading-container {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .loading {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3b82f6;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .log {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #f59e0b;
+    }
+
+    .results {
+      display: none;
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: #e0e7ff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 220px;
+      text-align: center;
+      color: #1e293b;
+    }
+
+    .card h3 {
+      color: #3b82f6;
+      margin-bottom: 10px;
+    }
+
+    .chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ffffff;
+      width: 300px;
+      height: 400px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+    }
+
+    .chatbot-header {
+      background-color: #3b82f6;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chatbot-body {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f8fafc;
+    }
+
+    .chatbot-input {
+      display: flex;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 0 0 0 20px;
+      font-size: 14px;
+    }
+
+    .chatbot-input button {
+      padding: 10px 20px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0 0 20px 0;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="left-panel">
+    <div class="slideshow">
+      <img src="/Users/burakbozoglu/Desktop/veriler.png" class="slide active" alt="Slide 1">
+      <img src="/Users/burakbozoglu/Desktop/veriler2.png" class="slide" alt="Slide 2">
+
+    </div>
+    <button class="chat-button" onclick="openChatbot()">Verileri Analiz Et</button>
+  </div>
+  
+
+  <div class="right-panel">
+    <h2>Makine Öğrenmesi Tahmin Formu</h2>
+
+    <div class="form-container">
+      <div class="form-group">
+        <label for="temperature">Sıcaklık (°C)</label>
+        <input type="number" id="temperature" name="temperature" value="85">
+      </div>
+
+      <div class="form-group">
+        <label for="humidity">Nem (%)</label>
+        <input type="number" id="humidity" name="humidity" value="30">
+      </div>
+
+      <div class="form-group">
+        <label for="hydrogen">Hidrojen Seviyesi</label>
+        <input type="number" id="hydrogen" name="hydrogen" value="95">
+      </div>
+
+      <div class="form-group">
+        <label for="vibration">Titreşim</label>
+        <input type="number" id="vibration" name="vibration" value="0.5">
+      </div>
+
+      <button class="api-button" onclick="sendToAPI()">Verileri Gönder ve Tahmin Al</button>
+    </div>
+
+    <div class="loading-container" id="loading-container">
+      <div class="loading"></div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="results" id="results"></div>
+
+  </div>
+
+  <!-- Chatbot -->
+  <div class="chatbot" id="chatbot">
+    <div class="chatbot-header">AI Chatbot</div>
+    <div class="chatbot-body" id="chatbot-body"></div>
+    <div class="chatbot-input">
+      <input type="text" id="chatbot-input" placeholder="Bir şeyler yaz...">
+      <button onclick="sendChat()">Gönder</button>
+    </div>
+  </div>
+
+  <script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    
+    function showSlides() {
+      slides.forEach((slide) => {
+        slide.classList.remove('active');
+      });
+      slideIndex++;
+      if (slideIndex > slides.length) { slideIndex = 1; }
+      slides[slideIndex - 1].classList.add('active');
+    }
+    setInterval(showSlides, 4000);
+    
+    let lastPrediction = null;
+    
+    async function sendToAPI() {
+      const loadingContainer = document.getElementById("loading-container");
+      const log = document.getElementById("log");
+      const results = document.getElementById("results");
+    
+      log.textContent = "";
+      results.style.display = "none";
+      loadingContainer.style.display = "block";
+    
+      const data = {
+        temperature: parseFloat(document.getElementById("temperature").value),
+        humidity: parseFloat(document.getElementById("humidity").value),
+        hydrogen_level: parseFloat(document.getElementById("hydrogen").value),
+        vibration: parseFloat(document.getElementById("vibration").value)
+      };
+    
+      setTimeout(async () => {
+        try {
+          const response = await fetch("http://127.0.0.1:5000/api/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+    
+          if (response.ok) {
+            const result = await response.json();
+            lastPrediction = result;
+            loadingContainer.style.display = "none";
+    
+            let output = `<div class='card'><h3>Model Yanıtı</h3><p>${result.prediction}</p></div>`;
+    
+            if (result.verimlilik_analizi) {
+              for (let [kriter, deger] of Object.entries(result.verimlilik_analizi)) {
+                output += `<div class='card'><h3>${kriter}</h3><p>${deger}</p></div>`;
+              }
+            }
+    
+            results.innerHTML = output;
+            results.style.display = "flex";
+            log.textContent = "✅ API cevabı başarıyla alındı!";
+          } else {
+            throw new Error("API isteği başarısız oldu.");
+          }
+        } catch (error) {
+          loadingContainer.style.display = "none";
+          log.textContent = "❌ API isteği başarısız oldu.";
+          console.error(error);
+        }
+      }, 2000);
+    }
+    
+    function openChatbot() {
+      const chatbot = document.getElementById("chatbot");
+      const chatbotBody = document.getElementById("chatbot-body");
+      chatbot.style.display = "flex";
+    
+      if (lastPrediction) {
+        chatbotBody.innerHTML = `<p><strong>Öneri:</strong> ${generateSuggestion(lastPrediction)}</p>`;
+      } else {
+        chatbotBody.innerHTML = "<p>Önce veri gönderip tahmin alınız.</p>";
+      }
+    }
+    
+    function generateSuggestion(prediction) {
+      if (!prediction) return "Veri bulunamadı.";
+    
+      const msg = prediction.prediction.toLowerCase();
+      
+      if (msg.includes("tehlikeli")) {
+        return "🚨 Tehlikeli seviyede hidrojen tespit edildi! Lütfen sistemi derhal kapatın, alanı havalandırın ve güvenlik önlemlerini uygulayın.";
+      } else if (msg.includes("dikkat")) {
+        return "⚠️ Hidrojen seviyeleri artıyor. Yakından takip edilmeli. Sistem performansında ani düşüşler olabilir. Acil müdahale hazırlığı yapınız.";
+      } else if (msg.includes("stabil")) {
+        return "✅ Sistem stabil görünüyor. Ancak düzenli sensör kontrolleri ve haftalık bakım tavsiye edilir. Mevcut değerler izlenmeli.";
+      } else {
+        return "ℹ️ Sistem durumu analizi yapıldı. Detaylar için veri tablolarını inceleyin.";
+      }
+    }
+    
+    function sendChat() {
+      const input = document.getElementById("chatbot-input");
+      const chatbotBody = document.getElementById("chatbot-body");
+      const userMessage = input.value.trim();
+    
+      if (userMessage !== "") {
+        chatbotBody.innerHTML += `<p><strong>Sen:</strong> ${userMessage}</p>`;
+        input.value = "";
+    
+        const loadingMessage = document.createElement("p");
+        loadingMessage.innerHTML = "<strong>Bot:</strong> Yazıyor...";
+        chatbotBody.appendChild(loadingMessage);
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    
+        setTimeout(() => {
+          loadingMessage.remove();
+          const botResponse = generateBotResponse(userMessage.toLowerCase());
+          chatbotBody.innerHTML += `<p><strong>Bot:</strong> ${botResponse}</p>`;
+          chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        }, 2000);
+      }
+    }
+    
+    function generateBotResponse(message) {
+      if (!lastPrediction) {
+        return "Öncelikle bir veri gönderip sistem analizini başlatmanız gerekiyor.";
+      }
+    
+      if (message.includes("teşekkür") || message.includes("sağol")) {
+        return "Her zaman yardımcı olmaktan memnuniyet duyarım! Başka sorularınız olursa sormaktan çekinmeyin. 🌟";
+      } else if (message.includes("risk") || message.includes("tehlike")) {
+        return generateSuggestion(lastPrediction) + " Lütfen güvenlik ekipleriyle iletişime geçiniz.";
+      } else if (message.includes("bakım") || message.includes("kontrol")) {
+        return "🛠️ Bakım protokolüne göre, sıcaklık, nem ve titreşim değerleri haftalık izlenmeli, hidrojen seviyesi ise günlük kontrol edilmelidir.";
+      } else if (message.includes("stabil") || message.includes("güvenli")) {
+        return "Şu anki verilere göre sistem stabil görünüyor. Ancak değişken çevre koşullarına karşı dikkatli olunması tavsiye edilir.";
+      } else {
+        // Ekstra olarak sistemin durumuna göre bir yanıt döner
+        return "Verdiğiniz bilgi doğrultusunda genel önerim: " + generateSuggestion(lastPrediction);
+      }
+    }
+    </script>
+    
+    
+
+</body>
+</html>
